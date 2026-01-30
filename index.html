@@ -6,32 +6,268 @@
     <title>Unity Web Player | Football</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <link rel="stylesheet" href="TemplateData/style.css">
+
+    <style>
+      /* --- ОСНОВНОЕ ОФОРМЛЕНИЕ --- */
+      body {
+        padding: 0;
+        margin: 0;
+        background: initial;
+        background-color: initial;
+      }
+
+      #ui-bottom-wrapper {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: calc(env(safe-area-inset-bottom) + 24px);
+
+          /* ИЗМЕНЕНИЕ: Flexbox управляет потоком */
+          display: flex;
+          flex-direction: column; /* Лоадер сверху, Факт снизу */
+          justify-content: flex-end; /* Прижимаем все к низу */
+          align-items: center; /* Центрируем по горизонтали */
+
+          padding: 0 32px;
+          gap: 20px; /* Отступ между лоадером и фактом */
+          z-index: 50;
+          
+          /* Чтобы контейнер не блокировал клики по бокам */
+          pointer-events: none; 
+      }
+
+      #unity-container {
+        position: relative;
+        background: url('TemplateData/image_66a78f.jpg') no-repeat center center;
+        background-size: cover;
+        background-color: transparent !important;
+      }
+
+      #unity-canvas {
+        background: transparent !important;
+      }
+
+      /* --- ЛОАДЕР --- */
+      #unity-loading-bar {
+          position: relative; 
+          width: 80%;
+          max-width: 500px;
+          height: 22px;
+          
+          /* ВАЖНО: Сбрасываем старое позиционирование, чтобы он не улетал вправо */
+          left: auto;
+          transform: none; 
+          margin: 0; /* Flexbox сам его отцентрует */
+
+          pointer-events: auto; 
+          display: none;
+
+          background: rgba(255,255,255,0.15);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+      }
+
+      #unity-progress-bar {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      #progress-fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #4db8ff, #0077ff);
+        border-radius: 12px 0 0 12px;
+        box-shadow: inset 0 0 6px rgba(255, 255, 255, 0.4);
+        transition: width 0.3s ease-out;
+        overflow: hidden;
+      }
+
+      #progress-fill::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -40%;
+        width: 40%;
+        height: 100%;
+        background: linear-gradient(120deg, rgba(255, 255, 255, 0.45), transparent);
+        border-radius: inherit;
+        animation: shine 1.5s infinite;
+      }
+
+      @keyframes shine {
+        from { left: -40%; }
+        to { left: 100%; }
+      }
+
+      /* --- ЛОГО И ФАКТЫ --- */
+      #custom-header-logo {
+        position: absolute;
+        top: 15%;
+        left: 20%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 30px;
+        background: url('TemplateData/click_logo.png') no-repeat center center;
+        background-size: contain;
+        z-index: 10;
+      }
+
+      #fun-fact-box {
+        position: relative;
+        width: 80%;
+        max-width: 520px;
+        
+        /* ВАЖНО: Тоже сбрасываем, чтобы факт стоял ровно */
+        left: auto;
+        bottom: auto;
+        transform: none;
+
+        pointer-events: auto;
+        padding: 24px 26px;
+
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+
+        color: white;
+        border-radius: 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+
+        font-family: Arial, sans-serif;
+        text-align: left;
+      }
+
+      #fun-fact-box b,
+      #fun-fact-box .headline {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: white;
+      }
+
+      #fun-fact-box .fact-text {
+        font-size: 15px;
+        line-height: 1.45;
+        opacity: 0.92;
+      }
+        /* --- CONNECTION ERROR OVERLAY --- */
+        #connection-error-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: none;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+        }
+
+            #connection-error-overlay.active {
+                display: flex;
+            }
+
+        .error-panel {
+            width: 85%;
+            max-width: 420px;
+            padding: 28px 26px;
+            border-radius: 22px;
+            background: rgba(20, 20, 20, 0.9);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        .error-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .error-text {
+            font-size: 15px;
+            line-height: 1.45;
+            opacity: 0.9;
+            margin-bottom: 22px;
+        }
+
+        .reload-btn {
+            width: 100%;
+            padding: 14px 0;
+            border-radius: 14px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #4db8ff, #0077ff);
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+        }
+    </style>
   </head>
+
   <body>
-    <div id="unity-container" class="unity-desktop">
-      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
-      <div id="unity-loading-bar">
-        <div id="unity-logo"></div>
-        <div id="unity-progress-bar-empty">
-          <div id="unity-progress-bar-full"></div>
-        </div>
+      <div id="custom-header-logo"></div>
+
+      <div id="unity-container" class="unity-desktop">
+          <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+
+          <div id="ui-bottom-wrapper">
+              <div id="unity-loading-bar">
+                  <div id="unity-progress-bar">
+                      <div id="progress-fill"></div>
+                  </div>
+              </div>
+
+              <div id="fun-fact-box">
+                  <div class="headline">Интересный факт</div>
+                  <div class="fact-text"></div>
+              </div>
+          </div>
+
+          <div id="unity-warning"></div>
+          <div id="unity-footer">
+              <div id="unity-logo-title-footer"></div>
+              <div id="unity-fullscreen-button"></div>
+              <div id="unity-build-title">Football</div>
+          </div>
       </div>
-      <div id="unity-warning"> </div>
-      <div id="unity-footer">
-        <div id="unity-logo-title-footer"></div>
-        <div id="unity-fullscreen-button"></div>
-        <div id="unity-build-title">Football</div>
+
+      <div id="connection-error-overlay">
+          <div class="error-panel">
+              <div class="error-title">Проблема с соединением</div>
+              <div class="error-text">
+                  Не удалось загрузить игру. Проверьте интернет и попробуйте снова.
+              </div>
+              <button class="reload-btn" onclick="location.reload()">Перезагрузить</button>
+          </div>
       </div>
-    </div>
-    <script>
+
+      <script>
+
+          let unityLoaded = false;
+          let unityFailed = false;
+          let visibilityHiddenAt = 0;
+
+        function showConnectionError() {
+              console.warn("Connection / WASM error");
+              document
+                  .getElementById("connection-error-overlay")
+                  .classList.add("active");
+          }
+
+
       var canvas = document.querySelector("#unity-canvas");
 
-      // Shows a temporary message banner/ribbon for a few seconds, or
-      // a permanent error message on top of the canvas if type=='error'.
-      // If type=='warning', a yellow highlight color is used.
-      // Modify or remove this function to customize the visually presented
-      // way that non-critical warnings and error messages are presented to the
-      // user.
       function unityShowBanner(msg, type) {
         var warningBanner = document.querySelector("#unity-warning");
         function updateBannerVisibility() {
@@ -52,82 +288,179 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/fifa_build.loader.js";
+      var loaderUrl = buildUrl + "/FifaBuild.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/fifa_build.data.unityweb",
-        frameworkUrl: buildUrl + "/fifa_build.framework.js.unityweb",
-        codeUrl: buildUrl + "/fifa_build.wasm.unityweb",
+        dataUrl: buildUrl + "/FifaBuild.data",
+        frameworkUrl: buildUrl + "/FifaBuild.framework.js",
+        codeUrl: buildUrl + "/FifaBuild.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "Football",
         productVersion: "0.1.0",
-        showBanner: unityShowBanner,
-        // errorHandler: function(err, url, line) {
-        //    alert("error " + err + " occurred at line " + line);
-        //    // Return 'true' if you handled this error and don't want Unity
-        //    // to process it further, 'false' otherwise.
-        //    return true;
-        // },
+        showBanner: showConnectionError,
       };
 
-      // By default, Unity keeps WebGL canvas render target size matched with
-      // the DOM size of the canvas element (scaled by window.devicePixelRatio)
-      // Set this to false if you want to decouple this synchronization from
-      // happening inside the engine, and you would instead like to size up
-      // the canvas DOM size and WebGL render target sizes yourself.
-      // config.matchWebGLToCanvasSize = false;
-
-      // If you would like all file writes inside Unity Application.persistentDataPath
-      // directory to automatically persist so that the contents are remembered when
-      // the user revisits the site the next time, uncomment the following line:
-      // config.autoSyncPersistentDataPath = true;
-      // This autosyncing is currently not the default behavior to avoid regressing
-      // existing user projects that might rely on the earlier manual
-      // JS_FileSystem_Sync() behavior, but in future Unity version, this will be
-      // expected to change.
-
       if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-
         var meta = document.createElement('meta');
         meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes, viewport-fit=cover';
         document.getElementsByTagName('head')[0].appendChild(meta);
         document.querySelector("#unity-container").className = "unity-mobile";
         canvas.className = "unity-mobile";
-
-        // To lower canvas resolution on mobile devices to gain some
-        // performance, uncomment the following line:
-        // config.devicePixelRatio = 1;
-
-
       } else {
-        // Desktop style: Render the game canvas in a window that can be maximized to fullscreen:
         canvas.style.width = "960px";
         canvas.style.height = "600px";
       }
 
       document.querySelector("#unity-loading-bar").style.display = "block";
 
+      const translations = {
+          "ru": {
+              "headline": "Интересный факт",
+              "facts": [
+                  "В Узбекистане растут чинары (платаны восточные), возраст которых превышает 1000 лет. Они являются живыми свидетелями истории.",
+                  "Чинара славится своей огромной раскидистой кроной, которая может создавать тень на площади до 400-500 квадратных метров.",
+                  "Саксаул - главное дерево пустынь Узбекистана. Его корни уходят на десятки метров вглубь в поисках воды, укрепляя пески.",
+                  "Ива белая, растущая вдоль арыков и рек, за сутки может выкачать из почвы и испарить через листья до 250 литров воды.",
+                  "Дикая фисташка - одно из древнейших растений Средней Азии. Это дерево-долгожитель, приспособившееся к каменистым склонам.",
+                  "Знаменитый шелковый путь проходил через оазисы, созданные руками человека с помощью посадок тополей и ив.",
+                  "В Узбекистане из сока местного вида клена (клён туркестанский) также можно добывать сладкий сироп, хотя это не так распространено, как в Канаде.",
+                  "В горах Узбекистана существуют уникальные естественные рощи грецкого ореха, например, в Чаткальских горах.",
+                  "В Узбекистане встречаются деревья, которые являются эндемиками (больше нигде в мире не растут) и реликтами, как некоторые виды яблонь и боярышника.",
+                  "Для борьбы с высыханием Аральского моря и опустыниванием в Узбекистане высаживаются миллионы саженцев засухоустойчивых деревьев, создавая новые леса."
+              ],
+              "error-title": "Проблема с соединением",
+              "error-text": "Не удалось загрузить игру. Проверьте интернет и попробуйте снова.",
+              "reload-btn": "Перезагрузить"
+          },
+          "en": {
+              "headline": "Interesting fact",
+              "facts": [
+                  "In Uzbekistan, there are sycamore trees (oriental plane trees) that are over 1,000 years old. They are living witnesses to history.",
+                  "The Chinar tree is famous for its huge spreading crown, which can create shade over an area of up to 400-500 square meters.",
+                  "Saxaul is the main tree of the deserts of Uzbekistan. Its roots go tens of meters deep in search of water, stabilizing the sand.",
+                  "White willow, growing along irrigation ditches and rivers, can “pump” up to 250 liters of water from the ground and evaporate it through its leaves in a single day.",
+                  "The wild Pistachio is one of the oldest plants in Middle Asia. It is a long-lived tree that has adapted to rocky slopes.",
+                  "The famous Silk Road passed through oases created by human hands with the help of poplar and willow plantings.",
+                  "In Uzbekistan, sweet syrup can also be extracted from the sap of a local species of maple (Turkestan maple), although this is not as common as in Canada.",
+                  "There are unique natural walnut groves in the mountains of Uzbekistan, for example, in the Chatkal Mountains.",
+                  "In Uzbekistan, there are trees that are endemic (they do not grow anywhere else in the world) and relics, such as some species of apple trees and hawthorn.",
+                  "To combat the drying up of the Aral Sea and desertification in Uzbekistan, millions of drought-resistant tree seedlings are being planted, creating new forests."
+              ],
+              "error-title": "Connection problem",
+              "error-text": "The game failed to load. Please check your internet connection and try again.",
+              "reload-btn": "Restart"
+          },
+          "uz": {
+              "headline": "Qiziqarli ma'lumot:",
+              "facts": [
+                  "O‘zbekistonda yoshi 1000 yildan oshgan chinorlar (sharq chinorlari) o‘sadi. Ular tarixning jonli guvohlaridir.",
+                  "Chinor o‘zining ulkan yoyiq shox-shabbasi bilan mashhur bo‘lib, u 400-500 kvadrat metrgacha bo‘lgan maydonda soya hosil qilishi mumkin.",
+                  "Saksovul - O‘zbekiston cho‘llarining asosiy daraxti. Uning ildizlari suv izlab o‘nlab metr chuqurlikka kirib boradi va qumlarni mustahkamlaydi.",
+                  "Ariq va daryo bo‘ylarida o‘sadigan oq tol bir kecha-kunduzda tuproqdan 250 litrgacha suv 'ichib' va uni barglari orqali bug‘latishi mumkin.",
+                  "Yovvoyi pista Markaziy Osiyodagi eng qadimgi o‘simliklardan biri. U toshli tog' yonbag'irlarida o'sishga moslashgan uzoq umr ko‘ruvchi daraxt.",
+                  "Mashhur Buyuk Ipak yo‘li terak va tol daraxtlarini ekish orqali inson qo‘li bilan yaratilgan vohalar orqali o‘tgan.",
+                  "Garchi bu Kanadadagi kabi keng tarqalmagan bo‘lsa-da, O‘zbekistonda zarangning mahalliy turi sharbatidan (Turkiston zarangi) shirin sirop olish mumkin.",
+                  "O‘zbekiston tog‘larida, masalan, Chotqol tog‘larida noyob tabiiy yong‘oqzorlar mavجد.",
+                  "O‘zbekistonda olma va do‘lananing ayrim turlari kabi endemik (dunyoning boshqa hech qayerida o‘smaydi) va relikt daraxtlar uchraydi.",
+                  "Orol dengizining qurishi va cho‘llanishga qarши kurashish maqsadida O‘zbekistonda millionlab qurg‘oqchilikka chidamli daraxt ko‘chatlari ekilib, yangi o‘rmonzorlar barpo etilmoqda."
+              ],
+              "error-title": "Ulanish muammosi",
+              "error-text": "O'yin yuklanmadi. Iltimos, internet ulanishingizni tekshirib, yana urinib ko'ring.",
+              "reload-btn": "Qayta ishga tushirish"
+          }
+      };
+
+      function setLocalizedContent() {
+          let lang = getCookie("click-language");
+
+          if (!lang || !translations[lang]) {
+              lang = "ru";
+          }
+
+          const currentData = translations[lang];
+          const factBox = document.querySelector("#fun-fact-box .fact-text");
+          const headlineBox = document.querySelector("#fun-fact-box .headline");
+
+          headlineBox.textContent = currentData.headline;
+
+          const randomFact = currentData.facts[Math.floor(Math.random() * currentData.facts.length)];
+          factBox.textContent = randomFact;
+      }
+
+      function setRandomFact() {
+          const factBox = document.querySelector("#fun-fact-box .fact-text");
+          factBox.textContent = facts[Math.floor(Math.random() * facts.length)];
+      }
+
+      setLocalizedContent();
+
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = () => {
         createUnityInstance(canvas, config, (progress) => {
-          document.querySelector("#unity-progress-bar-full").style.width = 100 * progress + "%";
-              }).then((unityInstance) => {
-                document.querySelector("#unity-loading-bar").style.display = "none";
-                document.querySelector("#unity-fullscreen-button").onclick = () => {
-                  unityInstance.SetFullscreen(1);
-                };
+          document.querySelector("#progress-fill").style.width = (100 * progress) + "%";
+        }).then((unityInstance) => {
+          document.querySelector("#unity-loading-bar").style.display = "none";
+          document.querySelector("#custom-header-logo").style.display = "none";
+          document.querySelector("#fun-fact-box").style.display = "none";
+          unityLoaded = true;
 
-              }).catch((message) => {
-                alert(message);
-              });
-            };
+          document.querySelector("#unity-fullscreen-button").onclick = () => {
+            unityInstance.SetFullscreen(1);
+          };
+        }).catch((message) => {
+            console.error("Unity load failed:", message);
+            unityFailed = true;
+            showConnectionError();
+        });
+      };
 
       document.body.appendChild(script);
+      function forceUnityResize() {
+          if (typeof unityInstance !== 'undefined') {
+              unityInstance.SendMessage("WebGLResizer", "ForceResize");
+          }
+      }
+      window.addEventListener("resize", forceUnityResize);
 
-    </script>
+      function getCookie(name) {
+          let matches = document.cookie.match(new RegExp(
+              "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+          ));
+          return matches ? decodeURIComponent(matches[1]) : undefined;
+          }
+
+          // Ловим wasm / network ошибки
+          //window.addEventListener("error", function (e) {
+          //    if (e.message) {
+          //        alert(e);
+          //        unityFailed = true;
+          //        showConnectionError();
+          //    }
+          //});
+
+          //// iOS: возврат после блокировки экрана
+          //document.addEventListener("visibilitychange", () => {
+          //    if (document.hidden) {
+          //        visibilityHiddenAt = Date.now();
+          //        return;
+          //    }
+
+          //    // вернулись из background
+          //    const hiddenTime = Date.now() - visibilityHiddenAt;
+
+          //    // если Unity уже загружен — НЕ ТРОГАЕМ
+          //    if (unityLoaded && !unityFailed) return;
+
+          //    // если Unity НЕ загрузился и экран был заблокирован долго
+          //    if (!unityLoaded && hiddenTime > 1500) {
+          //        unityFailed = true;
+          //        showConnectionError();
+          //    }
+          //});
+
+      </script>
   </body>
 </html>
