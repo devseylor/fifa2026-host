@@ -120,14 +120,29 @@
       /* --- ЛОГО И ФАКТЫ --- */
       #custom-header-logo {
         position: absolute;
-        top: 10%;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 120px;
-        height: 30px;
-        background: url('TemplateData/click_logo.png') no-repeat center center;
-        background-size: contain;
+        top: 9%;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
         z-index: 10;
+        text-align: center;
+        padding: 0 20px;
+        pointer-events: none;
+      }
+
+      .loader-header {
+        color: white;
+        font-family: 'Arial SemiBold', Arial, sans-serif;
+        font-size: 30px;
+        font-weight: 900;
+        line-height: 1.2;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        text-shadow: 0 2px 10px rgba(1, 20, 37, 0.75);
+        margin: 0;
       }
 
       #fun-fact-box {
@@ -227,7 +242,9 @@
   </head>
 
   <body>
-      <div id="custom-header-logo"></div>
+      <div id="custom-header-logo">
+          <h1 class="loader-header">PLAY, SCORE,<br>FLY TO WC 2026!</h1>
+      </div>
 
       <div id="unity-container" class="unity-desktop">
           <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
@@ -299,12 +316,12 @@
       }
 
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/fifa_build.loader.js";
+      var loaderUrl = buildUrl + "/fifa_build_prod_2.loader.js";
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/fifa_build.data.unityweb",
-        frameworkUrl: buildUrl + "/fifa_build.framework.js.unityweb",
-        codeUrl: buildUrl + "/fifa_build.wasm.unityweb",
+        dataUrl: buildUrl + "/fifa_build_prod_2.data.unityweb",
+        frameworkUrl: buildUrl + "/fifa_build_prod_2.framework.js.unityweb",
+        codeUrl: buildUrl + "/fifa_build_prod_2.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "DefaultCompany",
         productName: "Football",
@@ -340,7 +357,8 @@
               ],
               "error-title": "Проблема с соединением",
               "error-text": "Не удалось загрузить игру. Проверьте интернет и попробуйте снова.",
-              "reload-btn": "Перезагрузить"
+              "reload-btn": "Перезагрузить",
+              "loader-header" : "Играй, Забивай,<br>Лети на ЧМ 2026!"
           },
           "en": {
               "headline": "Interesting fact",
@@ -354,7 +372,8 @@
               ],
               "error-title": "Connection problem",
               "error-text": "The game failed to load. Please check your internet connection and try again.",
-              "reload-btn": "Restart"
+              "reload-btn": "Restart",
+              "loader-header" : "Play, score,<br>fly to WC 2026!"
           },
           "uz": {
               "headline": "Qiziqarli ma'lumot:",
@@ -368,7 +387,8 @@
               ],
               "error-title": "Ulanish muammosi",
               "error-text": "O'yin yuklanmadi. Iltimos, internet ulanishingizni tekshirib, yana urinib ko'ring.",
-              "reload-btn": "Qayta ishga tushirish"
+              "reload-btn": "Qayta ishga tushirish",
+              "loader-header" : "O’ynang, gol uring,<br>JCH 2026 ga boring"
           }
       };
 
@@ -382,8 +402,12 @@
           const currentData = translations[lang];
           const factBox = document.querySelector("#fun-fact-box .fact-text");
           const headlineBox = document.querySelector("#fun-fact-box .headline");
+          const loaderHeader = document.querySelector("#custom-header-logo .loader-header");
 
           headlineBox.textContent = currentData.headline;
+          if (loaderHeader) {
+              loaderHeader.innerHTML = currentData["loader-header"];
+          }
 
           const randomFact = currentData.facts[Math.floor(Math.random() * currentData.facts.length)];
           factBox.textContent = randomFact;
