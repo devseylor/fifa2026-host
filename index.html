@@ -48,7 +48,7 @@
         padding: 0 !important;
         margin: 0 !important;
         background: url('TemplateData/image_66a78f.jpg') no-repeat center center;
-        background-size: cover;
+        background-size: 100% 100%;
       }
 
       #unity-canvas {
@@ -58,25 +58,24 @@
         background: transparent !important;
       }
 
-      /* --- ЛОАДЕР --- */
       #unity-loading-bar {
           position: relative; 
           width: 85%;
           max-width: 500px;
-          height: 22px;
-          
-          /* ВАЖНО: Сбрасываем старое позиционирование, чтобы он не улетал вправо */
+          height: 30px;
           left: auto;
           transform: none; 
-          margin: 0; /* Flexbox сам его отцентрует */
+          margin: 0;
 
           pointer-events: auto; 
           display: none;
 
-          background: rgba(255,255,255,0.15);
-          border-radius: 12px;
+          background: rgba(0,0,0,0.4);
+          border-radius: 21px;
           overflow: hidden;
-          box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+          padding: 2px;
+          border: 6px solid rgba(255, 255, 255, 0.9);
       }
 
       #unity-progress-bar {
@@ -84,7 +83,7 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.2);
-        border-radius: 12px;
+        border-radius: 10px;
         overflow: hidden;
       }
 
